@@ -309,6 +309,13 @@ namespace winsw
                 if (executable == null)
                 {
                     executable = descriptor.Executable;
+                    LogEvent("Stopping " + descriptor.Executable + " " + stoparguments);
+                    WriteEvent("Stopping " + descriptor.Executable + " " + stoparguments);
+                }
+                else
+                {
+                    LogEvent("Stopping " + descriptor.StopExecutable + " " + stoparguments);
+                    WriteEvent("Stopping " + descriptor.StopExecutable + " " + stoparguments);
                 }
 
                 StartProcess(stopProcess, stoparguments, executable);
@@ -469,9 +476,9 @@ namespace winsw
                     Console.SetOut(w);
                     Console.SetError(w);
 
-                    var handle = f.Handle;
-                    SetStdHandle(-11, handle); // set stdout
-                    SetStdHandle(-12, handle); // set stder
+                    var safeHandle = f.SafeFileHandle;
+                    SetStdHandle(-11, safeHandle.DangerousGetHandle()); // set stdout
+                    SetStdHandle(-12, safeHandle.DangerousGetHandle()); // set stder
 
                     args = args.GetRange(2, args.Count - 2);
                 }
