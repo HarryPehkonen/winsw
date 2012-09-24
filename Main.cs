@@ -88,9 +88,9 @@ namespace winsw
                     {
                         LogEvent("Handling copy: " + line);
                         string[] tokens = line.Split('>');
-                        if (tokens.Length > 2)
+                        if (tokens.Length != 2)
                         {
-                            LogEvent("Too many delimiters in " + line);
+                            LogEvent("Wrong number of delimiters in " + line);
                             continue;
                         }
 
@@ -562,6 +562,11 @@ namespace winsw
                     wsvc.OnStart(args.ToArray());
                     Thread.Sleep(1000);
                     wsvc.OnStop();
+                }
+                if (args[0] == "version")
+                {
+                    Version version = new Version();
+                    Console.WriteLine("This version compiled " + version.version);
                 }
                 return;
             }

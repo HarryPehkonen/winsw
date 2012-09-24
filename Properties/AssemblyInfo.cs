@@ -5,9 +5,9 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyTitle("Windows Service Wrapper")]
 [assembly: AssemblyDescription("Allows arbitrary process to run as a Windows service by wrapping it")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("CloudBees, Inc.")]
+[assembly: AssemblyCompany("")]
 [assembly: AssemblyProduct("Windows Service Wrapper")]
-[assembly: AssemblyCopyright("Copyright 2008-2010 Sun Micorsystems, Inc., CloudBees, Inc.")]
+[assembly: AssemblyCopyright("")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
