@@ -48,7 +48,7 @@ Configuration Syntax
   <depend>Apache2.2</depend>
   <download from="http://www.google.ca/" to="c:\temp\deleteme.html" />
 </service>
-'''
+```
 
 id
 ==
