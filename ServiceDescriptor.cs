@@ -76,6 +76,18 @@ namespace winsw
             return Environment.ExpandEnvironmentVariables(n.InnerText);
         }
 
+        private string SingleElement(string tagName, string tagNameOtherwise)
+        {
+            try
+            {
+                return this.SingleElement(tagName);
+            }
+            catch (InvalidDataException)
+            {
+                return this.SingleElement(tagNameOtherwise);
+            }
+        }
+
         private int SingleIntElement(XmlNode parent, string tagName, int defaultValue)
         {
             var e = parent.SelectSingleNode(tagName);
@@ -90,6 +102,11 @@ namespace winsw
             }
         }
 
+        private string unquote(string txt)
+        {
+            return txt.Trim('"');
+        }
+
         /// <summary>
         /// Path to the executable.
         /// </summary>
@@ -97,7 +114,7 @@ namespace winsw
         {
             get
             {
-                return SingleElement("executable");
+                return this.unquote(SingleElement("executable"));
             }
         }
 
@@ -108,7 +125,7 @@ namespace winsw
         {
             get
             {
-                return SingleElement("stopexecutable");
+                return this.unquote(SingleElement("stopexecutable", "executable"));
             }
         }
 
@@ -202,15 +219,19 @@ namespace winsw
             get
             {
                 XmlNode loggingNode = dom.SelectSingleNode("//logpath");
+                string result = null;
 
                 if (loggingNode != null)
                 {
-                    return Environment.ExpandEnvironmentVariables(loggingNode.InnerText);
+                    result = Environment.ExpandEnvironmentVariables(loggingNode.InnerText);
                 }
                 else
                 {
-                    return Path.GetDirectoryName(ExecutablePath);
+                    result = Path.GetDirectoryName(ExecutablePath);
                 }
+
+                result = this.unquote(result);
+                return result;
             }
         }
 
@@ -280,7 +301,11 @@ namespace winsw
 
                 foreach (XmlNode depend in dom.SelectNodes("//depend"))
                 {
-                    serviceDependencies.Add(depend.InnerText);
+                    string txt = depend.InnerText.Trim();
+                    if (txt.Length != 0)
+                    {
+                        serviceDependencies.Add(txt);
+                    }
                 }
 
                 return (string[])serviceDependencies.ToArray(typeof(string));

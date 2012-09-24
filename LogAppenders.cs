@@ -24,6 +24,7 @@ namespace winsw
         }
 
         public abstract void log(Stream outputStream, Stream errorStream);
+        public abstract string logmode();
 
         public EventLogger EventLogger
         {
@@ -123,6 +124,10 @@ namespace winsw
             : base(logDirectory, baseName, FileMode.Append)
         {
         }
+        public override string logmode()
+        {
+            return "append";
+        }
     }
 
     public class ResetLogAppender : SimpleLogAppender
@@ -130,6 +135,10 @@ namespace winsw
         public ResetLogAppender(string logDirectory, string baseName)
             : base(logDirectory, baseName, FileMode.Create)
         {
+        }
+        public override string logmode()
+        {
+            return "reset";
         }
 
     }
@@ -145,6 +154,14 @@ namespace winsw
         {
             this.pattern = pattern;
             this.period = period;
+        }
+
+        public string Pattern { get { return this.pattern; } }
+        public int Period { get { return this.period; } }
+
+        public override string logmode()
+        {
+            return "roll-by-time";
         }
 
         public override void log(Stream outputStream, Stream errorStream)
@@ -223,6 +240,14 @@ namespace winsw
         {
             this.sizeThreshold = sizeThreshold;
             this.filesToKeep = filesToKeep;
+        }
+
+        public int SizeThreshold { get { return this.sizeThreshold; } }
+        public int FilesToKeep { get { return this.filesToKeep; } }
+
+        public override string logmode()
+        {
+            return "roll-by-size";
         }
 
         public SizeBasedRollingLogAppender(string logDirectory, string baseName)
@@ -307,6 +332,11 @@ namespace winsw
         public RollingLogAppender(string logDirectory, string baseName)
             : base(logDirectory, baseName, FileMode.Append)
         {
+        }
+
+        public override string logmode()
+        {
+            return "roll";
         }
 
         public override void log(Stream outputStream, Stream errorStream)

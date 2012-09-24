@@ -9,7 +9,7 @@ Usage
 
 During your development…
 
-* Take winsw.exe from the distribution, and rename it to your taste (such as myapp.exe)
+* Take winsw.exe from the distribution, and rename it to your taste (such as `myapp.exe`)
 * Write `myapp.xml` (see Configuration Syntax for more details)
 * Place those two files side by side when you deploy your application, because that’s how winsw.exe discovers its configuration.
 
@@ -27,6 +27,127 @@ In addition, you can also run `myapp.exe` status to have it print out the curren
 
 All these commands use the same set of exit code to indicate its result.
 
+
+Configuration Syntax
+====================
+
+```xml
+<service>
+  <id>NginxTest</id>
+  <name>NginX</name>
+  <description>Just testing</description>
+  <executable>"C:\Program Files\NginX\nginx.exe"</executable>
+  <stopexecutable>"C:\Program Files\NginX\nginx.exe"</stopexecutable>
+  <logpath>"C:\Whatever\"</logpath>
+  <logmode>roll</logmode>
+  <startargument>-p "C:\Whatever"</startargument>
+  <stopargument>-p "C:\Whatever"</stopargument>
+  <stopargument>-s stop</stopargument>
+  <env name="Name" value="The Value" />
+  <beeponshutdown />
+  <depend>Apache2.2</depend>
+  <download from="http://www.google.ca/" to="c:\temp\deleteme.html" />
+</service>
+'''
+
+id
+==
+
+A unique id for the service.
+
+name
+====
+
+This appears in the "Name" column in the Services list.
+
+description
+===========
+
+This appears in the "Description" column in the services list.
+
+executable
+==========
+
+Path and filename to the executable that starts the service.  Quotes get removed.
+
+stopexecutable
+==============
+
+Optional.  If this is specified, it (along with the stop-arguments) is used to shut down the service.
+
+logpath
+=======
+
+Optional.  Defaults to same path as `executable`.  Directory name where log files are created.
+
+logmode
+=======
+
+Defaults to `append`.
+
+rotate
+------
+
+Size-based log roller
+
+reset
+-----
+
+Resets the log file every time the service is started.  Doesn't roll.
+
+roll
+----
+
+Rolls the log file every time the service is started.
+
+roll-by-time
+------------
+
+Must specify `pattern`.  May specify `period` (defaults to one).
+
+I have no idea what kind of patterns to use.
+
+roll-by-size
+------------
+
+You may specify `sizeThreshold` in kilobytes (defaults to 10 kB).
+
+You may specify number of `keepFiles`.  Defaults to 8.
+
+append
+------
+
+Always appends to the end of a log file.
+
+depend
+======
+
+startargument
+=============
+
+Arguments that will be supplied to `executable`.  You can specify multiple startarguments -- they will be concatenated.
+
+stopargument
+============
+
+Arguments that will be supplied to `stopexecutable`, or `executable` if it wasn't specified.  You can specify multiple stoparguments -- they will be concatenated.
+
+env
+===
+
+Specify the name and value of one environment value as attributes.  Example:
+
+`<env name="PATH" value="C:\TEMP" />`
+
+beeponshutdown
+==============
+
+The wrapper makes a beep when the service has shut down.  It doesn't beep on restart.
+
+download
+========
+
+Use this to automatically download any files when the service is started.
 
 Deferred File Operations
 ========================

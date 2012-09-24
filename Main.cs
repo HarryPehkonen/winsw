@@ -306,17 +306,8 @@ namespace winsw
                 Process stopProcess = new Process();
                 String executable = descriptor.StopExecutable;
 
-                if (executable == null)
-                {
-                    executable = descriptor.Executable;
-                    LogEvent("Stopping " + descriptor.Executable + " " + stoparguments);
-                    WriteEvent("Stopping " + descriptor.Executable + " " + stoparguments);
-                }
-                else
-                {
-                    LogEvent("Stopping " + descriptor.StopExecutable + " " + stoparguments);
-                    WriteEvent("Stopping " + descriptor.StopExecutable + " " + stoparguments);
-                }
+                LogEvent("Stopping " + descriptor.StopExecutable + " " + stoparguments);
+                WriteEvent("Stopping " + descriptor.StopExecutable + " " + stoparguments);
 
                 StartProcess(stopProcess, stoparguments, executable);
 
@@ -457,6 +448,7 @@ namespace winsw
             {
                 var d = new ServiceDescriptor();
                 Win32Services svc = new WmiRoot().GetCollection<Win32Services>();
+                Console.WriteLine("Looking for service...");
                 Win32Service s = svc.Select(d.Id);
 
                 var args = new List<string>(Array.AsReadOnly(_args));
@@ -505,6 +497,7 @@ namespace winsw
                     // so using a classic method to set the description. Ugly.
                     Registry.LocalMachine.OpenSubKey("System").OpenSubKey("CurrentControlSet").OpenSubKey("Services")
                         .OpenSubKey(d.Id, true).SetValue("Description", d.Description);
+                    Console.WriteLine("Installed");
                 }
                 if (args[0] == "uninstall")
                 {
@@ -520,19 +513,31 @@ namespace winsw
                             return; // it's already uninstalled, so consider it a success
                         throw e;
                     }
+                    Console.WriteLine("Uninstalled");
                 }
                 if (args[0] == "start")
                 {
+                    Console.WriteLine("Requesting start");
                     if (s == null) ThrowNoSuchService();
                     s.StartService();
                 }
                 if (args[0] == "stop")
                 {
+                    Console.WriteLine("Requesting stop");
                     if (s == null) ThrowNoSuchService();
-                    s.StopService();
+                    if (s.Started)
+                    {
+                        s.StopService();
+                        Console.WriteLine("Stopped.");
+                    }
+                    else
+                    {
+                        Console.WriteLine("Not running.");
+                    }
                 }
                 if (args[0] == "restart")
                 {
+                    Console.WriteLine("Requesting restart");
                     if (s == null) 
                         ThrowNoSuchService();
 
@@ -541,6 +546,8 @@ namespace winsw
 
                     while (s.Started)
                     {
+
+                        // XXX:  Should give up after a while, and display error-message.
                         Thread.Sleep(1000);
                         s = svc.Select(d.Id);
                     }
@@ -566,7 +573,63 @@ namespace winsw
                 if (args[0] == "version")
                 {
                     Version version = new Version();
-                    Console.WriteLine("This version compiled " + version.version);
+                    Console.WriteLine("Compiled on " + version.version);
+                }
+                if (args[0] == "specs")
+                {
+                    Dictionary<string, string> specs = new Dictionary<string, string>()
+                    {
+                        {"argument", d.Arguments},
+                        {"beeponshutdown", d.BeepOnShutdown.ToString()},
+                        {"name", d.Caption},
+                        {"description", d.Description},
+                        {"executable", d.Executable},
+                        {"startargument", d.Startarguments},
+                        {"stopexecutable", d.StopExecutable},
+                        {"stopargument", d.Stoparguments},
+                        {"id", d.Id},
+                        {"interactive", d.Interactive.ToString()},
+                        {"logpath", d.LogDirectory},
+                        {"sleeptime", d.SleepTime.ToString()},
+                        {"waithint", d.WaitHint.ToString()},
+                    };
+
+                    foreach (KeyValuePair<string, string> spec in specs)
+                    {
+                        Console.WriteLine(spec.Key + ":  " + spec.Value);
+                    }
+
+                    Console.WriteLine("env:");
+                    foreach (var k in d.EnvironmentVariables)
+                    {
+                        Console.WriteLine("\t" + k.Key + "=" + k.Value);
+                    }
+
+                    Console.WriteLine("downloads:");
+                    foreach (var k in d.Downloads)
+                    {
+                        Console.WriteLine("\tFrom:  " + k.From + "\tTo:  " + k.To);
+                    }
+
+                    Console.WriteLine("depend:");
+                    foreach (var k in d.ServiceDependencies)
+                    {
+                        Console.WriteLine("\t" + k);
+                    }
+
+                    Console.WriteLine("log:");
+                    Console.WriteLine("\tmode:  " + d.LogHandler.logmode());
+                    if (d.LogHandler.GetType() == typeof(TimeBasedRollingLogAppender))
+                    {
+                        Console.WriteLine("\tpattern:  " + ((TimeBasedRollingLogAppender)d.LogHandler).Pattern);
+                        Console.WriteLine("\tperiod:  " + ((TimeBasedRollingLogAppender)d.LogHandler).Period);
+                    }
+                    else if (d.LogHandler.GetType() == typeof(SizeBasedRollingLogAppender))
+                    {
+                        Console.WriteLine("\tkeepFiles:  " + ((SizeBasedRollingLogAppender)d.LogHandler).FilesToKeep);
+                        Console.WriteLine("\tsizeThreshold:  " + ((SizeBasedRollingLogAppender)d.LogHandler).SizeThreshold);
+                    }
+
                 }
                 return;
             }
